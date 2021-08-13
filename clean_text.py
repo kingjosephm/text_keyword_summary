@@ -232,6 +232,20 @@ class clean_text:
         modified = [[token for token in indiv_doc if freq[token] > min_word_freq] for indiv_doc in temp]
         return pd.Series(modified, index=text.index).apply(lambda x: ' '.join(x))
 
+    def convert_currency_symbol(self, text):
+        '''
+        Converts common currency symbols in a document (str) to words
+        :param text: str, input text
+        :return: str
+        '''
+        text = text.replace("$", "dollar")
+        text = text.replace("USD", "dollar")
+        text = text.replace("€", "euro")
+        text = text.replace("EURO", "euro")
+        text = text.replace("EUR", "euro")
+        text = text.replace("£", "pound")
+        return text
+
     def run(self, text, no_stop_words=True, remove_punctuation=True, lemmatize=True, min_char_word=None,
             min_word_freq=None):
         '''
@@ -278,5 +292,8 @@ class clean_text:
         text = text.apply(lambda x: re.sub(' +', ' ', x))  # remove extra whitespace between words
         text = text.str.lstrip().str.rstrip()  # strip any whitespace at end or beginning
         text = text.apply(self.rm_whitespace_before_punct) # remove leading whitespace before punctuation
+
+        # Remove currency symbols
+        text = text.apply(lambda x: self.convert_currency_symbol(x))
 
         return text

@@ -74,14 +74,18 @@ class clean_text:
         '''
         return re.sub(r'(?<=[.,?!])(?=[^\s])', r' ', sentence)
 
-    def remove_punct(self, sentence):
+    def remove_punct(self, sentence, all=False):
         '''
         Removes punctuation from input string
         :param sentence: str, individual document/sentence
         :return: str
         '''
         assert isinstance(sentence, str)
-        table = str.maketrans('', '', string.punctuation)
+        if all:
+            punctuation = string.punctuation # removes all punctuation
+        else:
+            punctuation = '!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'  # excludes `-` in order to alloy hyphenated numbers, e.g. `thirty-one`
+        table = str.maketrans('', '', punctuation)
         return sentence.translate(table)
 
     def numbers_to_char(self, sentence):
@@ -267,8 +271,6 @@ class clean_text:
         text = text.apply(lambda x: self.remove_contractions(x))
         text = text.str.lower()  # contractions returns uppercase words, e.g. "I am"
         text = text.apply(lambda x: self.add_space_if_missing(x))
-        if remove_punctuation:
-            text = text.apply(lambda x: self.remove_punct(x))
         text = text.apply(
             lambda x: re.sub(r"[^A-Za-z0-9^,!?.\/'+]", " ", x))  # keep only regular Latin characters & punctuation
         text = text.apply(lambda x: self.numbers_to_char(x))
@@ -295,5 +297,8 @@ class clean_text:
 
         # Remove currency symbols
         text = text.apply(lambda x: self.convert_currency_symbol(x))
+
+        if remove_punctuation:
+            text = text.apply(lambda x: self.remove_punct(x))
 
         return text

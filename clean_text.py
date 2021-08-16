@@ -250,8 +250,8 @@ class clean_text:
         text = text.replace("£", "pound")
         return text
 
-    def run(self, text, no_stop_words=True, remove_punctuation=True, lemmatize=True, min_char_word=None,
-            min_word_freq=None):
+    def run(self, text, no_stop_words=True, remove_punctuation=True, lemmatize=True, remove_numbers=False,
+            min_char_word=None, min_word_freq=None):
         '''
         Function calls other functions in class
         :param text: pd.Series of input text
@@ -273,6 +273,8 @@ class clean_text:
         text = text.apply(lambda x: self.add_space_if_missing(x))
         text = text.apply(
             lambda x: re.sub(r"[^A-Za-z0-9^,!?.\/'+]", " ", x))  # keep only regular Latin characters & punctuation
+        if remove_numbers:
+            text = text.apply(lambda x: ''.join(i for i in x if not i.isdigit()))
         text = text.apply(lambda x: self.numbers_to_char(x))
         text = text.apply(lambda x: ' '.join(
             s for s in x.split() if not any(c.isdigit() for c in s)))  # remove whole word if alphanumeric
